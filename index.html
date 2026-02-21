@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>City Builder</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: #1a1a2e; overflow: hidden; }
+      canvas { display: block; width: 100vw; height: 100vh; }
+
+      #error {
+        position: fixed; inset: 0;
+        display: none; align-items: center; justify-content: center;
+        color: #e0e0e0; font-family: system-ui, sans-serif;
+        font-size: 1.25rem; padding: 2rem; text-align: center;
+      }
+
+      .toolbar-btn {
+        position: fixed;
+        padding: 0.6rem 1.2rem;
+        font-family: system-ui, sans-serif; font-size: 0.95rem;
+        color: #e0e0e0; background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 6px;
+        cursor: pointer; z-index: 10;
+      }
+      .toolbar-btn:hover { background: rgba(255, 255, 255, 0.18); }
+      .toolbar-btn.active {
+        background: rgba(50, 180, 80, 0.35);
+        border-color: rgba(50, 180, 80, 0.7);
+      }
+
+      #btn-new-entity { bottom: 1.5rem; right: 1.5rem; }
+      #btn-toggle-grid { bottom: 1.5rem; right: 10rem; }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <button id="btn-toggle-grid" class="toolbar-btn">Grid</button>
+    <button id="btn-new-entity" class="toolbar-btn">New Entity</button>
+    <div id="error"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
