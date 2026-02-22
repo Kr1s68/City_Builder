@@ -4,7 +4,8 @@
       "Bash(npm install:*)",
       "Bash(dir:*)",
       "Bash(move \"e:\\\\City_Builder\\\\src\\\\renderer.ts\" \"e:\\\\City_Builder\\\\src\\\\engine\\\\renderer.ts\")",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(find:*)"
     ]
   }
 }
