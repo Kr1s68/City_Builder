@@ -37,12 +37,14 @@ export interface Renderer {
    * @param occupiedCells  Cells that have placed buildings — drawn as solid green quads.
    * @param previewCells   Optional. Cells shown as a semi-transparent ghost while the player hovers a placement.
    * @param moveableCells  Optional. Cells highlighted in semi-transparent red to indicate a moveable entity.
+   * @param pathCells      Optional. Cells that form the road network between buildings — drawn in gray.
    */
   frame: (
     viewProj: Float32Array,
     occupiedCells: OccupiedCell[],
     previewCells?: OccupiedCell[],
     moveableCells?: OccupiedCell[],
+    pathCells?: OccupiedCell[],
   ) => void;
 }
 

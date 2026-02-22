@@ -103,6 +103,39 @@ struct Uniforms { viewProj : mat4x4f };
  * Same alpha-blending pipeline as the preview shader, just a different colour
  * to communicate "this object is being moved, not placed".
  */
+// ---------------------------------------------------------------------------
+// Path cells
+// ---------------------------------------------------------------------------
+
+/**
+ * Renders road / path cells that connect buildings.
+ * Colour: gray  rgb(0.55, 0.55, 0.55) — fully opaque.
+ * Drawn before buildings so building quads cover any overlapping path cells.
+ */
+export const PATH_SHADER = /* wgsl */ `
+struct Uniforms { viewProj : mat4x4f };
+@group(0) @binding(0) var<uniform> u : Uniforms;
+
+@vertex fn vs(@location(0) pos : vec2f) -> @builtin(position) vec4f {
+  return u.viewProj * vec4f(pos, 0.0, 1.0);
+}
+
+@fragment fn fs() -> @location(0) vec4f {
+  // Solid gray — indicates a path cell connecting buildings.
+  return vec4f(0.55, 0.55, 0.55, 1.0);
+}
+`;
+
+// ---------------------------------------------------------------------------
+// Moveable entity highlight
+// ---------------------------------------------------------------------------
+
+/**
+ * Renders an entity that the player is currently dragging / repositioning.
+ * Colour: red-ish  rgba(0.85, 0.2, 0.2, 0.55) — 55% opaque.
+ * Same alpha-blending pipeline as the preview shader, just a different colour
+ * to communicate "this object is being moved, not placed".
+ */
 export const MOVEABLE_SHADER = /* wgsl */ `
 struct Uniforms { viewProj : mat4x4f };
 @group(0) @binding(0) var<uniform> u : Uniforms;
