@@ -8,6 +8,7 @@ import {
   createQuadPipeline,
   createPreviewPipeline,
   createMoveablePipeline,
+  createPathPipeline,
 } from "./pipelines";
 import { buildQuads, MAX_QUADS, FLOATS_PER_QUAD } from "./quads";
 
@@ -130,6 +131,7 @@ export async function initRenderer(
   const quad = createQuadPipeline(ctx);
   const preview = createPreviewPipeline(ctx);
   const moveable = createMoveablePipeline(ctx);
+  const path = createPathPipeline(ctx);
 
   // --- CPU-side quad buffers (reused each frame) --------------------------
   // Pre-allocate the maximum-size typed arrays on the CPU heap once.
@@ -137,6 +139,7 @@ export async function initRenderer(
   const quadCpuData = new Float32Array(MAX_QUADS * FLOATS_PER_QUAD);
   const previewCpuData = new Float32Array(MAX_QUADS * FLOATS_PER_QUAD);
   const moveableCpuData = new Float32Array(MAX_QUADS * FLOATS_PER_QUAD);
+  const pathCpuData = new Float32Array(MAX_QUADS * FLOATS_PER_QUAD);
 
   // --- Frame callback -----------------------------------------------------
   /**
@@ -152,12 +155,14 @@ export async function initRenderer(
    * @param occupiedCells  Placed buildings — drawn as solid green quads.
    * @param previewCells   Optional. Ghost quads for the placement cursor.
    * @param moveableCells  Optional. Red highlight quads for the entity being moved.
+   * @param pathCells      Optional. Gray quads forming the road network between buildings.
    */
   function frame(
     viewProj: Float32Array,
     occupiedCells: OccupiedCell[],
     previewCells?: OccupiedCell[],
     moveableCells?: OccupiedCell[],
+    pathCells?: OccupiedCell[],
   ) {
     // 1. Push the updated camera matrix to the GPU so all shaders see the new view.
     device.queue.writeBuffer(
@@ -186,6 +191,9 @@ export async function initRenderer(
           moveable.vertexBuffer,
         )
       : 0;
+    const pathCount = pathCells
+      ? buildQuads(device, pathCells, pathCpuData, path.vertexBuffer)
+      : 0;
 
     // 3. Record GPU commands into an encoder (nothing runs on the GPU yet).
     const encoder = device.createCommandEncoder();
@@ -206,8 +214,17 @@ export async function initRenderer(
 
     // Draw layers in back-to-front order so blending produces the correct result.
 
-    // Layer 1: Placed buildings — solid green, fully opaque.
-    //          Drawn first so transparent layers can blend over them.
+    // Layer 1: Path cells — gray roads connecting buildings.
+    //          Drawn first so building quads cover any paths underneath them.
+    if (pathCount > 0) {
+      pass.setPipeline(path.pipeline);
+      pass.setBindGroup(0, bindGroup);
+      pass.setVertexBuffer(0, path.vertexBuffer);
+      pass.draw(pathCount * 6);
+    }
+
+    // Layer 2: Placed buildings — solid green, fully opaque.
+    //          Covers path cells underneath and provides base for transparent layers.
     if (quadCount > 0) {
       pass.setPipeline(quad.pipeline);
       pass.setBindGroup(0, bindGroup);        // attach the uniform buffer (camera matrix)
@@ -215,7 +232,7 @@ export async function initRenderer(
       pass.draw(quadCount * 6);              // 6 vertices per quad (2 triangles × 3 verts)
     }
 
-    // Layer 2: Moveable entity — semi-transparent red, blends over buildings.
+    // Layer 3: Moveable entity — semi-transparent red, blends over buildings.
     if (moveableCount > 0) {
       pass.setPipeline(moveable.pipeline);
       pass.setBindGroup(0, bindGroup);
@@ -223,7 +240,7 @@ export async function initRenderer(
       pass.draw(moveableCount * 6);
     }
 
-    // Layer 3: Placement preview (ghost) — semi-transparent green, blends over everything.
+    // Layer 4: Placement preview (ghost) — semi-transparent green, blends over everything.
     if (previewCount > 0) {
       pass.setPipeline(preview.pipeline);
       pass.setBindGroup(0, bindGroup);
@@ -231,7 +248,7 @@ export async function initRenderer(
       pass.draw(previewCount * 6);
     }
 
-    // Layer 4: Grid lines — drawn last so they appear on top of all cell layers.
+    // Layer 5: Grid lines — drawn last so they appear on top of all cell layers.
     //          Visibility controlled by state.showGrid (toggled by the UI).
     if (state.showGrid) {
       pass.setPipeline(grid.pipeline);

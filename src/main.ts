@@ -21,6 +21,7 @@ import {
   tickMoveableEntities,
 } from "./game/grid";
 import { PlaceholderEntity, MoveableEntity } from "./game/entities";
+import { getPathCells } from "./game/pathNetwork";
 
 async function main() {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -141,7 +142,7 @@ async function main() {
         }
       }
 
-      renderer.frame(vp, getOccupiedCells(), previewCells, getMoveableCells());
+      renderer.frame(vp, getOccupiedCells(), previewCells, getMoveableCells(), getPathCells());
 
       requestAnimationFrame(loop);
     }

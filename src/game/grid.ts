@@ -6,6 +6,7 @@
  */
 
 import { PlaceableEntity, MoveableEntity } from "./entities";
+import { regeneratePaths } from "./pathNetwork";
 
 /** Number of columns (cells along X). */
 export const GRID_COLS = 128;
@@ -62,6 +63,7 @@ export function placeEntity(entity: PlaceableEntity): boolean {
       cellOccupant.set(cellKey(entity.col + dc, entity.row + dr), entity);
     }
   }
+  regeneratePaths();
   return true;
 }
 
@@ -76,6 +78,7 @@ export function removeEntity(id: number): PlaceableEntity | undefined {
       cellOccupant.delete(cellKey(entity.col + dc, entity.row + dr));
     }
   }
+  regeneratePaths();
   return entity;
 }
 

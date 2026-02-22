@@ -1,7 +1,7 @@
 /** Pipeline creation helpers. */
 
 import type { GPUContext } from "./types";
-import { GRID_SHADER, QUAD_SHADER, PREVIEW_SHADER, MOVEABLE_SHADER } from "./shaders";
+import { GRID_SHADER, QUAD_SHADER, PREVIEW_SHADER, MOVEABLE_SHADER, PATH_SHADER } from "./shaders";
 
 /**
  * HOW RENDER PIPELINES WORK
@@ -155,6 +155,30 @@ export function createPreviewPipeline(ctx: GPUContext): QuadPipeline {
       entryPoint: "fs",
       targets: [{ format: ctx.format, blend: alphaBlend }], // blending enabled here
     },
+    primitive: { topology: "triangle-list" },
+  });
+
+  return { pipeline, vertexBuffer };
+}
+
+/**
+ * Creates the pipeline for path cells connecting buildings.
+ *
+ * Same structure as createQuadPipeline() — solid opaque quads, no blending.
+ * Drawn before buildings so building quads cover any overlapping path cells.
+ */
+export function createPathPipeline(ctx: GPUContext): QuadPipeline {
+  const module = ctx.device.createShaderModule({ code: PATH_SHADER });
+
+  const vertexBuffer = ctx.device.createBuffer({
+    size: MAX_QUAD_BUFFER_SIZE,
+    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+  });
+
+  const pipeline = ctx.device.createRenderPipeline({
+    layout: ctx.pipelineLayout,
+    vertex: { module, entryPoint: "vs", buffers: [ctx.vertexBufferLayout] },
+    fragment: { module, entryPoint: "fs", targets: [{ format: ctx.format }] },
     primitive: { topology: "triangle-list" },
   });
 
