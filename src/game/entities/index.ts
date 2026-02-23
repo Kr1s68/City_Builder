@@ -3,3 +3,4 @@
 export { PlaceableEntity } from "./PlaceableEntity";
 export { PlaceholderEntity } from "./PlaceholderEntity";
 export { MoveableEntity } from "./MoveableEntity";
+export { HouseEntity } from "./HouseEntity";

@@ -1,7 +1,7 @@
 /** Quad geometry helpers — builds triangle-list vertex data from cell coordinates. */
 
 import { CELL_SIZE } from "../../game/grid";
-import type { OccupiedCell } from "./types";
+import type { OccupiedCell, TexturedEntity } from "./types";
 
 /** Maximum cells we can render in a single draw call. Raising this increases VRAM usage. */
 export const MAX_QUADS = 4096;
@@ -89,6 +89,73 @@ export function buildQuads(
       cpuBuf as Float32Array<ArrayBuffer>,
       0,                          // source element offset
       count * FLOATS_PER_QUAD,    // number of floats to copy
+    );
+  }
+
+  return count;
+}
+
+/**
+ * Number of floats per textured quad.
+ * Each vertex has 4 floats (x, y, u, v) instead of 2.
+ * 2 triangles × 3 vertices × 4 floats = 24 floats per quad.
+ */
+export const FLOATS_PER_TEXTURED_QUAD = 24;
+
+/**
+ * Converts a list of textured entities into GPU-ready triangle vertex data
+ * with UV coordinates. Each entity becomes a single quad spanning its full
+ * width × height in grid cells.
+ *
+ * @param device   WebGPU device — needed to schedule the buffer upload.
+ * @param entities Array of entities with col, row, width, height.
+ * @param cpuBuf   Pre-allocated Float32Array for MAX_QUADS * FLOATS_PER_TEXTURED_QUAD floats.
+ * @param gpuBuf   The GPU vertex buffer that this draw call will read from.
+ * @returns The number of quads written (pass this to `draw(count * 6)`).
+ */
+export function buildTexturedQuads(
+  device: GPUDevice,
+  entities: TexturedEntity[],
+  cpuBuf: Float32Array,
+  gpuBuf: GPUBuffer,
+): number {
+  const count = Math.min(entities.length, MAX_QUADS);
+
+  // Padding (in cells) to extend the quad beyond the entity footprint.
+  // The building sprite is taller than its base, so we extend upward
+  // (+y direction) to create a 3D height effect. Base stays anchored.
+  const PAD_X = 0.25 * CELL_SIZE;   // extend left & right
+  const PAD_UP = 1.0 * CELL_SIZE;   // extend upward (above footprint)
+
+  for (let i = 0; i < count; i++) {
+    const e = entities[i];
+
+    const x0 = e.col * CELL_SIZE - PAD_X;
+    const y0 = e.row * CELL_SIZE;                          // bottom stays flush
+    const x1 = (e.col + e.width) * CELL_SIZE + PAD_X;
+    const y1 = (e.row + e.height) * CELL_SIZE + PAD_UP;    // extend upward
+
+    const off = i * FLOATS_PER_TEXTURED_QUAD;
+
+    // UVs are flipped vertically: top of quad = v:1, bottom = v:0
+    // Triangle 1: top-left half
+    cpuBuf[off +  0] = x0; cpuBuf[off +  1] = y0; cpuBuf[off +  2] = 0; cpuBuf[off +  3] = 1;
+    cpuBuf[off +  4] = x1; cpuBuf[off +  5] = y0; cpuBuf[off +  6] = 1; cpuBuf[off +  7] = 1;
+    cpuBuf[off +  8] = x0; cpuBuf[off +  9] = y1; cpuBuf[off + 10] = 0; cpuBuf[off + 11] = 0;
+
+    // Triangle 2: bottom-right half
+    cpuBuf[off + 12] = x1; cpuBuf[off + 13] = y0; cpuBuf[off + 14] = 1; cpuBuf[off + 15] = 1;
+    cpuBuf[off + 16] = x1; cpuBuf[off + 17] = y1; cpuBuf[off + 18] = 1; cpuBuf[off + 19] = 0;
+    cpuBuf[off + 20] = x0; cpuBuf[off + 21] = y1; cpuBuf[off + 22] = 0; cpuBuf[off + 23] = 0;
+  }
+
+  if (count > 0) {
+    device.queue.writeBuffer(
+      gpuBuf,
+      0,
+      cpuBuf as Float32Array<ArrayBuffer>,
+      0,
+      count * FLOATS_PER_TEXTURED_QUAD,
     );
   }
 

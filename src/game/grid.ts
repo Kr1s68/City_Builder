@@ -97,10 +97,11 @@ export function getAllEntities(): PlaceableEntity[] {
   return Array.from(entitiesById.values());
 }
 
-/** Return every occupied cell across all placed entities. */
+/** Return every occupied cell for entities that don't have a texture (flat-coloured). */
 export function getOccupiedCells(): { col: number; row: number }[] {
   const cells: { col: number; row: number }[] = [];
   for (const entity of entitiesById.values()) {
+    if ("texture" in entity) continue; // rendered by the textured pipeline
     for (let dc = 0; dc < entity.width; dc++) {
       for (let dr = 0; dr < entity.height; dr++) {
         cells.push({ col: entity.col + dc, row: entity.row + dr });
@@ -108,6 +109,20 @@ export function getOccupiedCells(): { col: number; row: number }[] {
     }
   }
   return cells;
+}
+
+/** Return all placed entities that have a texture (for textured rendering).
+ *  Sorted by bottom edge (row + height) descending so that buildings with
+ *  the lowest y (highest row) are drawn last and overlap those behind them. */
+export function getTexturedEntities(): { col: number; row: number; width: number; height: number }[] {
+  const result: { col: number; row: number; width: number; height: number }[] = [];
+  for (const entity of entitiesById.values()) {
+    if ("texture" in entity) {
+      result.push({ col: entity.col, row: entity.row, width: entity.width, height: entity.height });
+    }
+  }
+  result.sort((a, b) => (b.row + b.height) - (a.row + a.height));
+  return result;
 }
 
 // ---------------------------------------------------------------------------

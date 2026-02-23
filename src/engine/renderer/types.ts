@@ -12,6 +12,17 @@ export interface OccupiedCell {
 }
 
 /**
+ * Represents a placed entity that should be rendered with a texture
+ * instead of a flat colour. The quad spans width × height cells.
+ */
+export interface TexturedEntity {
+  col: number;
+  row: number;
+  width: number;
+  height: number;
+}
+
+/**
  * The public handle returned by initRenderer().
  * The game loop holds one of these and calls frame() each tick.
  */
@@ -45,6 +56,8 @@ export interface Renderer {
     previewCells?: OccupiedCell[],
     moveableCells?: OccupiedCell[],
     pathCells?: OccupiedCell[],
+    texturedEntities?: TexturedEntity[],
+    previewTexturedEntities?: TexturedEntity[],
   ) => void;
 }
 

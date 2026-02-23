@@ -1,16 +1,18 @@
 /** Renderer entry — initialises WebGPU and orchestrates per-frame drawing. */
 
-export type { Renderer, OccupiedCell } from "./types";
+export type { Renderer, OccupiedCell, TexturedEntity } from "./types";
 
-import type { Renderer, OccupiedCell } from "./types";
+import type { Renderer, OccupiedCell, TexturedEntity } from "./types";
 import {
   createGridPipeline,
   createQuadPipeline,
   createPreviewPipeline,
   createMoveablePipeline,
   createPathPipeline,
+  createTexturedPipeline,
+  createTexturedPreviewPipeline,
 } from "./pipelines";
-import { buildQuads, MAX_QUADS, FLOATS_PER_QUAD } from "./quads";
+import { buildQuads, buildTexturedQuads, MAX_QUADS, FLOATS_PER_QUAD, FLOATS_PER_TEXTURED_QUAD } from "./quads";
 
 /**
  * Initialises the WebGPU renderer and returns a Renderer handle.
@@ -23,6 +25,30 @@ import { buildQuads, MAX_QUADS, FLOATS_PER_QUAD } from "./quads";
  * @param gridLineData Pre-built flat (x,y) vertex array for all grid lines.
  *                     Generated once by the grid module and never changes.
  */
+/**
+ * Loads an image from a URL and uploads it to a GPUTexture.
+ */
+async function loadTexture(device: GPUDevice, url: string): Promise<GPUTexture> {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  const bitmap = await createImageBitmap(blob);
+
+  const texture = device.createTexture({
+    size: [bitmap.width, bitmap.height],
+    format: "rgba8unorm",
+    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+
+  device.queue.copyExternalImageToTexture(
+    { source: bitmap },
+    { texture },
+    [bitmap.width, bitmap.height],
+  );
+
+  bitmap.close();
+  return texture;
+}
+
 export async function initRenderer(
   canvas: HTMLCanvasElement,
   gridLineData: Float32Array,
@@ -133,6 +159,12 @@ export async function initRenderer(
   const moveable = createMoveablePipeline(ctx);
   const path = createPathPipeline(ctx);
 
+  // --- Textured pipeline (house texture) ---------------------------------
+  // Vite serves the public/ directory at the root, so no /public prefix needed.
+  const houseTexture = await loadTexture(device, "/textures/buildings/house-placeholder.png");
+  const textured = createTexturedPipeline(ctx, houseTexture);
+  const texturedPreview = createTexturedPreviewPipeline(ctx, houseTexture);
+
   // --- CPU-side quad buffers (reused each frame) --------------------------
   // Pre-allocate the maximum-size typed arrays on the CPU heap once.
   // buildQuads() overwrites these in-place every frame to avoid GC pressure.
@@ -140,6 +172,8 @@ export async function initRenderer(
   const previewCpuData = new Float32Array(MAX_QUADS * FLOATS_PER_QUAD);
   const moveableCpuData = new Float32Array(MAX_QUADS * FLOATS_PER_QUAD);
   const pathCpuData = new Float32Array(MAX_QUADS * FLOATS_PER_QUAD);
+  const texturedCpuData = new Float32Array(MAX_QUADS * FLOATS_PER_TEXTURED_QUAD);
+  const texturedPreviewCpuData = new Float32Array(MAX_QUADS * FLOATS_PER_TEXTURED_QUAD);
 
   // --- Frame callback -----------------------------------------------------
   /**
@@ -163,6 +197,8 @@ export async function initRenderer(
     previewCells?: OccupiedCell[],
     moveableCells?: OccupiedCell[],
     pathCells?: OccupiedCell[],
+    texturedEntities?: TexturedEntity[],
+    previewTexturedEntities?: TexturedEntity[],
   ) {
     // 1. Push the updated camera matrix to the GPU so all shaders see the new view.
     device.queue.writeBuffer(
@@ -193,6 +229,12 @@ export async function initRenderer(
       : 0;
     const pathCount = pathCells
       ? buildQuads(device, pathCells, pathCpuData, path.vertexBuffer)
+      : 0;
+    const texturedCount = texturedEntities
+      ? buildTexturedQuads(device, texturedEntities, texturedCpuData, textured.vertexBuffer)
+      : 0;
+    const texturedPreviewCount = previewTexturedEntities
+      ? buildTexturedQuads(device, previewTexturedEntities, texturedPreviewCpuData, texturedPreview.vertexBuffer)
       : 0;
 
     // 3. Record GPU commands into an encoder (nothing runs on the GPU yet).
@@ -232,6 +274,15 @@ export async function initRenderer(
       pass.draw(quadCount * 6);              // 6 vertices per quad (2 triangles × 3 verts)
     }
 
+    // Layer 2b: Textured buildings — rendered with their texture on top of the green base.
+    if (texturedCount > 0) {
+      pass.setPipeline(textured.pipeline);
+      pass.setBindGroup(0, textured.uniformBindGroup);
+      pass.setBindGroup(1, textured.textureBindGroup);
+      pass.setVertexBuffer(0, textured.vertexBuffer);
+      pass.draw(texturedCount * 6);
+    }
+
     // Layer 3: Moveable entity — semi-transparent red, blends over buildings.
     if (moveableCount > 0) {
       pass.setPipeline(moveable.pipeline);
@@ -246,6 +297,15 @@ export async function initRenderer(
       pass.setBindGroup(0, bindGroup);
       pass.setVertexBuffer(0, preview.vertexBuffer);
       pass.draw(previewCount * 6);
+    }
+
+    // Layer 4b: Textured placement preview — semi-transparent texture ghost.
+    if (texturedPreviewCount > 0) {
+      pass.setPipeline(texturedPreview.pipeline);
+      pass.setBindGroup(0, texturedPreview.uniformBindGroup);
+      pass.setBindGroup(1, texturedPreview.textureBindGroup);
+      pass.setVertexBuffer(0, texturedPreview.vertexBuffer);
+      pass.draw(texturedPreviewCount * 6);
     }
 
     // Layer 5: Grid lines — drawn last so they appear on top of all cell layers.

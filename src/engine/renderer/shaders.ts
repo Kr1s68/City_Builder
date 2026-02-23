@@ -136,6 +136,79 @@ struct Uniforms { viewProj : mat4x4f };
  * Same alpha-blending pipeline as the preview shader, just a different colour
  * to communicate "this object is being moved, not placed".
  */
+// ---------------------------------------------------------------------------
+// Textured quad
+// ---------------------------------------------------------------------------
+
+/**
+ * Renders entities that have a texture (e.g. HouseEntity).
+ * The vertex buffer supplies (x, y, u, v) per vertex — position + UV.
+ * A sampler + texture2d are bound at @group(1) so the fragment shader
+ * can sample the image.
+ */
+export const TEXTURED_SHADER = /* wgsl */ `
+struct Uniforms { viewProj : mat4x4f };
+@group(0) @binding(0) var<uniform> u : Uniforms;
+
+// Texture bindings — separate bind group so we can reuse the uniform group.
+@group(1) @binding(0) var texSampler : sampler;
+@group(1) @binding(1) var texImage   : texture_2d<f32>;
+
+struct VsOut {
+  @builtin(position) pos : vec4f,
+  @location(0) uv : vec2f,
+};
+
+@vertex fn vs(@location(0) pos : vec2f, @location(1) uv : vec2f) -> VsOut {
+  var out : VsOut;
+  out.pos = u.viewProj * vec4f(pos, 0.0, 1.0);
+  out.uv  = uv;
+  return out;
+}
+
+@fragment fn fs(@location(0) uv : vec2f) -> @location(0) vec4f {
+  return textureSample(texImage, texSampler, uv);
+}
+`;
+
+// ---------------------------------------------------------------------------
+// Textured preview (ghost)
+// ---------------------------------------------------------------------------
+
+/**
+ * Same as TEXTURED_SHADER but multiplies the output alpha by 0.4
+ * to give a semi-transparent "ghost" preview effect when hovering.
+ */
+export const TEXTURED_PREVIEW_SHADER = /* wgsl */ `
+struct Uniforms { viewProj : mat4x4f };
+@group(0) @binding(0) var<uniform> u : Uniforms;
+
+@group(1) @binding(0) var texSampler : sampler;
+@group(1) @binding(1) var texImage   : texture_2d<f32>;
+
+struct VsOut {
+  @builtin(position) pos : vec4f,
+  @location(0) uv : vec2f,
+};
+
+@vertex fn vs(@location(0) pos : vec2f, @location(1) uv : vec2f) -> VsOut {
+  var out : VsOut;
+  out.pos = u.viewProj * vec4f(pos, 0.0, 1.0);
+  out.uv  = uv;
+  return out;
+}
+
+@fragment fn fs(@location(0) uv : vec2f) -> @location(0) vec4f {
+  var col = textureSample(texImage, texSampler, uv);
+  col.a *= 0.4;
+  return col;
+}
+`;
+
+// ---------------------------------------------------------------------------
+// Moveable entity highlight
+// ---------------------------------------------------------------------------
+
 export const MOVEABLE_SHADER = /* wgsl */ `
 struct Uniforms { viewProj : mat4x4f };
 @group(0) @binding(0) var<uniform> u : Uniforms;

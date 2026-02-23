@@ -1,7 +1,7 @@
 /** Pipeline creation helpers. */
 
 import type { GPUContext } from "./types";
-import { GRID_SHADER, QUAD_SHADER, PREVIEW_SHADER, MOVEABLE_SHADER, PATH_SHADER } from "./shaders";
+import { GRID_SHADER, QUAD_SHADER, PREVIEW_SHADER, MOVEABLE_SHADER, PATH_SHADER, TEXTURED_SHADER, TEXTURED_PREVIEW_SHADER } from "./shaders";
 
 /**
  * HOW RENDER PIPELINES WORK
@@ -228,9 +228,205 @@ export function createMoveablePipeline(ctx: GPUContext): QuadPipeline {
   return { pipeline, vertexBuffer };
 }
 
+// ---------------------------------------------------------------------------
+// Textured pipeline
+// ---------------------------------------------------------------------------
+
+/** Return type for the textured pipeline — includes both bind groups. */
+export interface TexturedPipeline {
+  pipeline: GPURenderPipeline;
+  vertexBuffer: GPUBuffer;
+  /** Bind group for the uniform buffer (group 0) — separate from the shared one because of a different layout. */
+  uniformBindGroup: GPUBindGroup;
+  /** Bind group for the sampler + texture (group 1). */
+  textureBindGroup: GPUBindGroup;
+}
+
+/**
+ * Creates a pipeline for rendering textured quads.
+ *
+ * Unlike the flat-colour pipelines, this one:
+ *  - Uses a vertex layout with 4 floats per vertex (x, y, u, v).
+ *  - Has a second bind group (@group(1)) containing a sampler + texture.
+ *  - Enables alpha blending so textures with transparency composite correctly.
+ *
+ * @param ctx     Shared GPU resources.
+ * @param texture The GPUTexture to sample from.
+ */
+export function createTexturedPipeline(
+  ctx: GPUContext,
+  texture: GPUTexture,
+): TexturedPipeline {
+  const module = ctx.device.createShaderModule({ code: TEXTURED_SHADER });
+
+  // Vertex layout: (x, y, u, v) — 4 floats × 4 bytes = 16 bytes per vertex.
+  const texturedVertexLayout: GPUVertexBufferLayout = {
+    arrayStride: 4 * 4,
+    attributes: [
+      { shaderLocation: 0, offset: 0, format: "float32x2" as GPUVertexFormat },  // pos
+      { shaderLocation: 1, offset: 8, format: "float32x2" as GPUVertexFormat },  // uv
+    ],
+  };
+
+  // Second bind group layout for the texture + sampler.
+  const textureBindGroupLayout = ctx.device.createBindGroupLayout({
+    entries: [
+      { binding: 0, visibility: GPUShaderStage.FRAGMENT, sampler: { type: "filtering" } },
+      { binding: 1, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+    ],
+  });
+
+  // Uniform bind group layout for group(0) — same shape as the shared one but
+  // must be a separate object because it belongs to a different pipeline layout.
+  const texUniformBindGroupLayout = ctx.device.createBindGroupLayout({
+    entries: [
+      { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
+    ],
+  });
+
+  // Pipeline layout: group(0) = uniforms, group(1) = texture.
+  const texPipelineLayout = ctx.device.createPipelineLayout({
+    bindGroupLayouts: [texUniformBindGroupLayout, textureBindGroupLayout],
+  });
+
+  const sampler = ctx.device.createSampler({
+    magFilter: "nearest",
+    minFilter: "nearest",
+  });
+
+  const textureBindGroup = ctx.device.createBindGroup({
+    layout: textureBindGroupLayout,
+    entries: [
+      { binding: 0, resource: sampler },
+      { binding: 1, resource: texture.createView() },
+    ],
+  });
+
+  // Alpha blending so texture transparency works.
+  const alphaBlend: GPUBlendState = {
+    color: {
+      srcFactor: "src-alpha",
+      dstFactor: "one-minus-src-alpha",
+      operation: "add",
+    },
+    alpha: {
+      srcFactor: "one",
+      dstFactor: "one-minus-src-alpha",
+      operation: "add",
+    },
+  };
+
+  const vertexBuffer = ctx.device.createBuffer({
+    size: MAX_QUAD_BUFFER_SIZE_TEXTURED,
+    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+  });
+
+  // We need a separate uniform bind group for the textured pipeline because
+  // it uses a different pipeline layout.
+  const texUniformBindGroup = ctx.device.createBindGroup({
+    layout: texUniformBindGroupLayout,
+    entries: [{ binding: 0, resource: { buffer: ctx.uniformBuffer } }],
+  });
+
+  const pipeline = ctx.device.createRenderPipeline({
+    layout: texPipelineLayout,
+    vertex: { module, entryPoint: "vs", buffers: [texturedVertexLayout] },
+    fragment: {
+      module,
+      entryPoint: "fs",
+      targets: [{ format: ctx.format, blend: alphaBlend }],
+    },
+    primitive: { topology: "triangle-list" },
+  });
+
+  return { pipeline, vertexBuffer, textureBindGroup, uniformBindGroup: texUniformBindGroup };
+}
+
+/**
+ * Creates a pipeline for the textured placement preview (ghost).
+ * Same layout as createTexturedPipeline but uses TEXTURED_PREVIEW_SHADER
+ * which outputs at 40% opacity for the ghost effect.
+ * Reuses the texture bind group from an existing textured pipeline.
+ */
+export function createTexturedPreviewPipeline(
+  ctx: GPUContext,
+  texture: GPUTexture,
+): TexturedPipeline {
+  const module = ctx.device.createShaderModule({ code: TEXTURED_PREVIEW_SHADER });
+
+  const texturedVertexLayout: GPUVertexBufferLayout = {
+    arrayStride: 4 * 4,
+    attributes: [
+      { shaderLocation: 0, offset: 0, format: "float32x2" as GPUVertexFormat },
+      { shaderLocation: 1, offset: 8, format: "float32x2" as GPUVertexFormat },
+    ],
+  };
+
+  const textureBindGroupLayout = ctx.device.createBindGroupLayout({
+    entries: [
+      { binding: 0, visibility: GPUShaderStage.FRAGMENT, sampler: { type: "filtering" } },
+      { binding: 1, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+    ],
+  });
+
+  const texUniformBindGroupLayout = ctx.device.createBindGroupLayout({
+    entries: [
+      { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
+    ],
+  });
+
+  const texPipelineLayout = ctx.device.createPipelineLayout({
+    bindGroupLayouts: [texUniformBindGroupLayout, textureBindGroupLayout],
+  });
+
+  const sampler = ctx.device.createSampler({ magFilter: "nearest", minFilter: "nearest" });
+
+  const textureBindGroup = ctx.device.createBindGroup({
+    layout: textureBindGroupLayout,
+    entries: [
+      { binding: 0, resource: sampler },
+      { binding: 1, resource: texture.createView() },
+    ],
+  });
+
+  const alphaBlend: GPUBlendState = {
+    color: { srcFactor: "src-alpha", dstFactor: "one-minus-src-alpha", operation: "add" },
+    alpha: { srcFactor: "one", dstFactor: "one-minus-src-alpha", operation: "add" },
+  };
+
+  const vertexBuffer = ctx.device.createBuffer({
+    size: MAX_QUAD_BUFFER_SIZE_TEXTURED,
+    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+  });
+
+  const texUniformBindGroup = ctx.device.createBindGroup({
+    layout: texUniformBindGroupLayout,
+    entries: [{ binding: 0, resource: { buffer: ctx.uniformBuffer } }],
+  });
+
+  const pipeline = ctx.device.createRenderPipeline({
+    layout: texPipelineLayout,
+    vertex: { module, entryPoint: "vs", buffers: [texturedVertexLayout] },
+    fragment: {
+      module, entryPoint: "fs",
+      targets: [{ format: ctx.format, blend: alphaBlend }],
+    },
+    primitive: { topology: "triangle-list" },
+  });
+
+  return { pipeline, vertexBuffer, textureBindGroup, uniformBindGroup: texUniformBindGroup };
+}
+
 /**
  * Pre-computed size in bytes for a quad vertex buffer at maximum capacity.
  * 4096 quads × 12 floats/quad × 4 bytes/float = 196 608 bytes (~192 KB).
  * Allocated once; only the used portion is uploaded each frame.
  */
 const MAX_QUAD_BUFFER_SIZE = 4096 * 12 * 4;
+
+/**
+ * Pre-computed size for textured quad vertex buffer.
+ * 4096 quads × 24 floats/quad × 4 bytes/float = 393 216 bytes (~384 KB).
+ * Textured quads have 4 floats per vertex (x, y, u, v) instead of 2.
+ */
+const MAX_QUAD_BUFFER_SIZE_TEXTURED = 4096 * 24 * 4;
