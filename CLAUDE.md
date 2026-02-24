@@ -21,11 +21,21 @@ src/main.ts              — Orchestrator: wires engine + game + input together
   ├── engine/            — Rendering and camera (no game logic)
   │     ├── camera.ts    — Orthographic camera: pan, zoom, VP matrix, screen↔world
   │     └── renderer/    — WebGPU abstraction
-  │           ├── index.ts      — initRenderer(), frame() per-frame submission
-  │           ├── shaders.ts    — WGSL shader source strings
-  │           ├── pipelines.ts  — GPURenderPipeline factories (compiled once at startup)
+  │           ├── index.ts      — initRenderer() orchestrator (wires setup, pipelines, layers)
+  │           ├── setup.ts      — WebGPU bootstrap (adapter, device, context, shared resources)
+  │           ├── frame.ts      — createFrameFn() per-frame render pass orchestration
+  │           ├── layers.ts     — FlatLayer/TexturedLayer abstractions (update + draw)
   │           ├── quads.ts      — CPU-side geometry builders (pre-allocated Float32Arrays)
-  │           └── types.ts      — Shared renderer interfaces
+  │           ├── types.ts      — Shared renderer interfaces (Renderer, GPUContext, etc.)
+  │           ├── shaders/      — WGSL shader source strings (one file per shader)
+  │           │     ├── grid.ts, quad.ts, preview.ts, path.ts, moveable.ts, textured.ts
+  │           │     └── index.ts  — Barrel re-exports
+  │           └── pipelines/    — GPURenderPipeline factories (one file per pipeline)
+  │                 ├── grid.ts, quad.ts, preview.ts, path.ts, moveable.ts, textured.ts
+  │                 ├── types.ts     — Pipeline return types (GridPipeline, QuadPipeline, etc.)
+  │                 ├── constants.ts — Buffer size constants
+  │                 ├── blend.ts     — Shared alpha blend state
+  │                 └── index.ts     — Barrel re-exports
   └── game/              — Pure game state (no GPU code)
         ├── grid.ts          — Spatial index via module-level Maps; place/remove/query
         ├── pathfinder.ts    — Stateless A* (4-directional, Manhattan heuristic)
@@ -39,6 +49,7 @@ Layers drawn back-to-front each frame: path cells → placed buildings → textu
 
 ### Key Patterns
 
+- **Render layers**: Each visual layer (path, building, preview, etc.) is wrapped in a `FlatLayer` or `TexturedLayer` struct that encapsulates the pipeline, CPU staging buffer, and draw logic. Layers are updated then drawn in back-to-front order via `updateFlatLayer()`/`drawFlatLayer()` (or textured equivalents).
 - **Entity discrimination**: `if ("texture" in entity)` routes to textured vs flat-color pipeline. `PlaceableEntity` is the base class; `HouseEntity` adds a `texture` property; `MoveableEntity` is separate (NPCs, not buildings).
 - **Cell key format**: `"col,row"` string used consistently across `grid.ts`, `pathfinder.ts`, and `pathNetwork.ts`.
 - **Pre-allocated GPU buffers**: All vertex buffers and CPU-side Float32Arrays are allocated at max size (`MAX_QUADS = 4096`) at startup — only the used portion is uploaded each frame.

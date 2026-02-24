@@ -36,3 +36,26 @@ Open the local URL printed by Vite (usually `http://localhost:5173`).
 - **Renderer** &mdash; WebGPU (WGSL shaders)
 - **Bundler** &mdash; Vite
 - **Language** &mdash; TypeScript (strict)
+
+## Project structure
+
+```
+src/
+├── main.ts                  — Entry point: wires engine + game + input
+├── engine/
+│   ├── camera.ts            — Orthographic camera (pan, zoom, VP matrix)
+│   └── renderer/
+│       ├── index.ts         — initRenderer() orchestrator
+│       ├── setup.ts         — WebGPU bootstrap (adapter, device, context)
+│       ├── frame.ts         — Per-frame render pass logic
+│       ├── layers.ts        — FlatLayer / TexturedLayer abstractions
+│       ├── quads.ts         — CPU-side geometry builders
+│       ├── types.ts         — Shared renderer interfaces
+│       ├── shaders/         — WGSL shader sources (one per visual layer)
+│       └── pipelines/       — GPU pipeline factories (one per visual layer)
+└── game/
+    ├── grid.ts              — Spatial index (place / remove / query)
+    ├── pathfinder.ts        — A* pathfinding (4-directional)
+    ├── pathNetwork.ts       — Road network between buildings
+    └── entities/            — Entity class hierarchy
+```
