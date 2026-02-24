@@ -5,7 +5,14 @@
       "Bash(dir:*)",
       "Bash(move \"e:\\\\City_Builder\\\\src\\\\renderer.ts\" \"e:\\\\City_Builder\\\\src\\\\engine\\\\renderer.ts\")",
       "Bash(npx tsc:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git checkout:*)",
+      "Bash(npx vitest:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" auth status)"
     ]
   }
 }
