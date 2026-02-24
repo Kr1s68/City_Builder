@@ -11,7 +11,7 @@ import {
   createPathPipeline,
   createTexturedPipeline,
   createTexturedPreviewPipeline,
-} from "./pipelines";
+} from "./pipelines/index";
 import { buildQuads, buildTexturedQuads, MAX_QUADS, FLOATS_PER_QUAD, FLOATS_PER_TEXTURED_QUAD } from "./quads";
 
 /**
