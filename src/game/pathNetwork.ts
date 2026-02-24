@@ -19,6 +19,11 @@ import {
 } from "./grid";
 import type { PlaceableEntity } from "./entities";
 
+/** Returns true if the entity is a wall (walls don't participate in the road network). */
+function isWall(entity: PlaceableEntity): boolean {
+  return "defence" in entity;
+}
+
 // ---------------------------------------------------------------------------
 // Module state
 // ---------------------------------------------------------------------------
@@ -170,6 +175,9 @@ function findSegmentOwner(col: number, row: number): number {
  * bridge segment instead of running long-distance A* to building doors.
  */
 export function addPathsForEntity(entity: PlaceableEntity): void {
+  // Walls are defensive structures — they don't connect to the road network.
+  if (isWall(entity)) return;
+
   const door = getDoorCell(entity);
   if (!door) return;
 
@@ -205,6 +213,7 @@ export function addPathsForEntity(entity: PlaceableEntity): void {
   const others: { entity: PlaceableEntity; door: PathCell }[] = [];
   for (const e of getAllEntities()) {
     if (e.id === entity.id) continue;
+    if (isWall(e)) continue; // walls are not path targets
     const d = getDoorCell(e);
     if (d) others.push({ entity: e, door: d });
   }
@@ -334,6 +343,7 @@ export function findNavigationPath(
 export function getBuildingDoors(): PathCell[] {
   const doors: PathCell[] = [];
   for (const e of getAllEntities()) {
+    if (isWall(e)) continue; // walls have no doors
     const door = getDoorCell(e);
     if (door) doors.push(door);
   }

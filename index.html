@@ -16,31 +16,53 @@
         font-size: 1.25rem; padding: 2rem; text-align: center;
       }
 
-      .toolbar-btn {
-        position: fixed;
+      #hud {
+        position: fixed; top: 0; left: 0; right: 0;
         padding: 0.6rem 1.2rem;
-        font-family: system-ui, sans-serif; font-size: 0.95rem;
+        font-family: system-ui, sans-serif; font-size: 0.9rem;
+        color: #f0e6c8; background: rgba(0, 0, 0, 0.55);
+        z-index: 10; text-align: center;
+        letter-spacing: 0.5px;
+      }
+
+      .toolbar {
+        position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%);
+        display: flex; gap: 0.5rem;
+        z-index: 10;
+      }
+
+      .toolbar-btn {
+        padding: 0.5rem 0.9rem;
+        font-family: system-ui, sans-serif; font-size: 0.85rem;
         color: #e0e0e0; background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 6px;
-        cursor: pointer; z-index: 10;
+        cursor: pointer;
+        white-space: nowrap;
       }
       .toolbar-btn:hover { background: rgba(255, 255, 255, 0.18); }
       .toolbar-btn.active {
         background: rgba(50, 180, 80, 0.35);
         border-color: rgba(50, 180, 80, 0.7);
       }
-
-      #btn-new-entity { bottom: 1.5rem; right: 1.5rem; }
-      #btn-new-house { bottom: 1.5rem; right: 10rem; }
-      #btn-toggle-grid { bottom: 1.5rem; right: 17.5rem; }
     </style>
   </head>
   <body>
     <canvas id="canvas"></canvas>
 
-    <button id="btn-toggle-grid" class="toolbar-btn">Grid</button>
-    <button id="btn-new-house" class="toolbar-btn">House</button>
-    <button id="btn-new-entity" class="toolbar-btn">New Entity</button>
+    <div id="hud">Gold: 100 | Wood: 50 | Stone: 50 | Food: 50</div>
+
+    <div class="toolbar">
+      <button id="btn-toggle-grid" class="toolbar-btn">Grid</button>
+      <button class="toolbar-btn" data-building="house">House</button>
+      <button class="toolbar-btn" data-building="town_hall">Town Hall</button>
+      <button class="toolbar-btn" data-building="lumber_mill">Lumber Mill</button>
+      <button class="toolbar-btn" data-building="quarry">Quarry</button>
+      <button class="toolbar-btn" data-building="farm">Farm</button>
+      <button class="toolbar-btn" data-building="storage">Storehouse</button>
+      <button class="toolbar-btn" data-building="market">Market</button>
+      <button class="toolbar-btn" data-building="wall">Wall</button>
+    </div>
+
     <div id="error"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
