@@ -112,16 +112,23 @@ export function getOccupiedCells(): { col: number; row: number }[] {
 }
 
 /** Return all placed entities that have a texture (for textured rendering).
- *  Sorted by bottom edge (row + height) descending so that buildings with
- *  the lowest y (highest row) are drawn last and overlap those behind them. */
-export function getTexturedEntities(): { col: number; row: number; width: number; height: number }[] {
-  const result: { col: number; row: number; width: number; height: number }[] = [];
+ *  Sorted by isometric depth (col + row) ascending so that entities further
+ *  from the viewer are drawn first, and closer ones overlap on top. */
+export function getTexturedEntities(): { col: number; row: number; width: number; height: number; type: string }[] {
+  const result: { col: number; row: number; width: number; height: number; type: string }[] = [];
   for (const entity of entitiesById.values()) {
     if ("texture" in entity) {
-      result.push({ col: entity.col, row: entity.row, width: entity.width, height: entity.height });
+      const type = (entity as { texture: string }).texture;
+      result.push({ col: entity.col, row: entity.row, width: entity.width, height: entity.height, type });
     }
   }
-  result.sort((a, b) => (b.row + b.height) - (a.row + a.height));
+  // Depth sort: primary by row (higher row = further = draw first),
+  // secondary by col (higher col = further = draw first on same row).
+  result.sort((a, b) => {
+    const dr = (b.row + b.height) - (a.row + a.height);
+    if (dr !== 0) return dr;
+    return (b.col + b.width) - (a.col + a.width);
+  });
   return result;
 }
 

@@ -13,14 +13,24 @@
 export type ResourceType = "gold" | "wood" | "stone" | "food";
 
 /** All valid resource types, used for iteration. */
-export const RESOURCE_TYPES: readonly ResourceType[] = ["gold", "wood", "stone", "food"];
+export const RESOURCE_TYPES: readonly ResourceType[] = [
+  "gold",
+  "wood",
+  "stone",
+  "food",
+];
 
 /** A record mapping each resource type to a numeric value. */
 export type ResourceMap = Record<ResourceType, number>;
 
 /** Creates a ResourceMap with all values set to a given default. */
 export function createResourceMap(defaultValue = 0): ResourceMap {
-  return { gold: defaultValue, wood: defaultValue, stone: defaultValue, food: defaultValue };
+  return {
+    gold: defaultValue,
+    wood: defaultValue,
+    stone: defaultValue,
+    food: defaultValue,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -40,8 +50,18 @@ export interface EconomyState {
 }
 
 /** Default starting economy values. */
-const DEFAULT_CAPACITY: ResourceMap = { gold: 500, wood: 300, stone: 300, food: 300 };
-const DEFAULT_STARTING: ResourceMap = { gold: 100, wood: 50, stone: 50, food: 50 };
+const DEFAULT_CAPACITY: ResourceMap = {
+  gold: 500,
+  wood: 300,
+  stone: 300,
+  food: 300,
+};
+const DEFAULT_STARTING: ResourceMap = {
+  gold: 500,
+  wood: 300,
+  stone: 300,
+  food: 300,
+};
 
 /** Create a fresh economy state with starting resources. */
 export function createEconomyState(): EconomyState {
@@ -66,7 +86,10 @@ export function canAfford(state: EconomyState, cost: ResourceMap): boolean {
 }
 
 /** Deduct a cost from the economy. Returns false if funds are insufficient. */
-export function spendResources(state: EconomyState, cost: ResourceMap): boolean {
+export function spendResources(
+  state: EconomyState,
+  cost: ResourceMap,
+): boolean {
   if (!canAfford(state, cost)) return false;
   for (const type of RESOURCE_TYPES) {
     state.resources[type] -= cost[type];
@@ -75,7 +98,10 @@ export function spendResources(state: EconomyState, cost: ResourceMap): boolean 
 }
 
 /** Add resources, clamped to storage capacity. */
-export function addResources(state: EconomyState, amounts: Partial<ResourceMap>): void {
+export function addResources(
+  state: EconomyState,
+  amounts: Partial<ResourceMap>,
+): void {
   for (const type of RESOURCE_TYPES) {
     const add = amounts[type] ?? 0;
     state.resources[type] = Math.min(
@@ -86,28 +112,48 @@ export function addResources(state: EconomyState, amounts: Partial<ResourceMap>)
 }
 
 /** Increase storage capacity by the given amounts. */
-export function addCapacity(state: EconomyState, amounts: Partial<ResourceMap>): void {
+export function addCapacity(
+  state: EconomyState,
+  amounts: Partial<ResourceMap>,
+): void {
   for (const type of RESOURCE_TYPES) {
     state.capacity[type] += amounts[type] ?? 0;
   }
 }
 
 /** Decrease storage capacity (e.g., when a storage building is demolished). */
-export function removeCapacity(state: EconomyState, amounts: Partial<ResourceMap>): void {
+export function removeCapacity(
+  state: EconomyState,
+  amounts: Partial<ResourceMap>,
+): void {
   for (const type of RESOURCE_TYPES) {
-    state.capacity[type] = Math.max(0, state.capacity[type] - (amounts[type] ?? 0));
+    state.capacity[type] = Math.max(
+      0,
+      state.capacity[type] - (amounts[type] ?? 0),
+    );
     // Clamp current resources if capacity dropped below them
-    state.resources[type] = Math.min(state.resources[type], state.capacity[type]);
+    state.resources[type] = Math.min(
+      state.resources[type],
+      state.capacity[type],
+    );
   }
 }
 
 /** Update production rates — typically called when buildings change. */
-export function setProductionRate(state: EconomyState, type: ResourceType, rate: number): void {
+export function setProductionRate(
+  state: EconomyState,
+  type: ResourceType,
+  rate: number,
+): void {
   state.production[type] = rate;
 }
 
 /** Update consumption rates — typically called when buildings change. */
-export function setConsumptionRate(state: EconomyState, type: ResourceType, rate: number): void {
+export function setConsumptionRate(
+  state: EconomyState,
+  type: ResourceType,
+  rate: number,
+): void {
   state.consumption[type] = rate;
 }
 

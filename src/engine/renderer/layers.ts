@@ -13,6 +13,7 @@
 
 import type { QuadPipeline, TexturedPipeline, GridPipeline } from "./pipelines/index";
 import type { OccupiedCell, TexturedEntity } from "./types";
+import type { UVRegion } from "../assets";
 import { buildQuads, buildTexturedQuads, MAX_QUADS, FLOATS_PER_QUAD, FLOATS_PER_TEXTURED_QUAD } from "./quads";
 
 // ---------------------------------------------------------------------------
@@ -90,9 +91,10 @@ export function updateTexturedLayer(
   layer: TexturedLayer,
   device: GPUDevice,
   entities: TexturedEntity[] | undefined,
+  uvMap?: ReadonlyMap<string, UVRegion>,
 ): void {
   layer.quadCount = entities
-    ? buildTexturedQuads(device, entities, layer.cpuBuffer, layer.pipeline.vertexBuffer)
+    ? buildTexturedQuads(device, entities, layer.cpuBuffer, layer.pipeline.vertexBuffer, uvMap)
     : 0;
 }
 

@@ -8,6 +8,7 @@
 
 import type { OccupiedCell, TexturedEntity } from "./types";
 import type { GridPipeline } from "./pipelines/index";
+import type { UVRegion } from "../assets";
 import {
   type FlatLayer,
   type TexturedLayer,
@@ -43,11 +44,13 @@ interface FrameContext {
  * @param fCtx   Shared GPU handles (device, context, uniform buffer, bind group).
  * @param layers All render layers in draw order.
  * @param state  Mutable renderer state (showGrid flag).
+ * @param uvMap  Per-building-type UV regions for the atlas.
  */
 export function createFrameFn(
   fCtx: FrameContext,
   layers: FrameLayers,
   state: { showGrid: boolean },
+  uvMap: ReadonlyMap<string, UVRegion>,
 ) {
   const { device, context, uniformBuffer, bindGroup } = fCtx;
 
@@ -68,12 +71,13 @@ export function createFrameFn(
     );
 
     // 2. Build geometry for each layer and upload to GPU vertex buffers.
+    // Background layer is pre-filled at init — no per-frame update needed.
     updateFlatLayer(layers.path, device, pathCells);
     updateFlatLayer(layers.quad, device, occupiedCells);
-    updateTexturedLayer(layers.textured, device, texturedEntities);
+    updateTexturedLayer(layers.textured, device, texturedEntities, uvMap);
     updateFlatLayer(layers.moveable, device, moveableCells);
     updateFlatLayer(layers.preview, device, previewCells);
-    updateTexturedLayer(layers.texturedPreview, device, previewTexturedEntities);
+    updateTexturedLayer(layers.texturedPreview, device, previewTexturedEntities, uvMap);
 
     // 3. Record the render pass.
     const encoder = device.createCommandEncoder();
@@ -89,12 +93,12 @@ export function createFrameFn(
     });
 
     // Draw layers back-to-front.
-    drawFlatLayer(layers.path, pass, bindGroup);         // Layer 1: roads
-    drawFlatLayer(layers.quad, pass, bindGroup);         // Layer 2: buildings (flat)
-    drawTexturedLayer(layers.textured, pass);            // Layer 2b: buildings (textured)
-    drawFlatLayer(layers.moveable, pass, bindGroup);     // Layer 3: moveable highlight
-    drawFlatLayer(layers.preview, pass, bindGroup);      // Layer 4: placement ghost
-    drawTexturedLayer(layers.texturedPreview, pass);     // Layer 4b: textured ghost
+    drawFlatLayer(layers.path, pass, bindGroup);             // Layer 1: roads
+    drawFlatLayer(layers.quad, pass, bindGroup);             // Layer 2: buildings (flat)
+    drawTexturedLayer(layers.textured, pass);                // Layer 2b: buildings (textured)
+    drawFlatLayer(layers.moveable, pass, bindGroup);         // Layer 3: moveable highlight
+    drawFlatLayer(layers.preview, pass, bindGroup);          // Layer 4: placement ghost
+    drawTexturedLayer(layers.texturedPreview, pass);         // Layer 4b: textured ghost
 
     // Layer 5: Grid overlay (conditional).
     if (state.showGrid) {

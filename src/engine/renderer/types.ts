@@ -14,12 +14,14 @@ export interface OccupiedCell {
 /**
  * Represents a placed entity that should be rendered with a texture
  * instead of a flat colour. The quad spans width × height cells.
+ * `type` identifies the building type for atlas UV lookup.
  */
 export interface TexturedEntity {
   col: number;
   row: number;
   width: number;
   height: number;
+  type: string;
 }
 
 /**

@@ -11,7 +11,8 @@
 export type { Renderer, OccupiedCell, TexturedEntity } from "./types";
 
 import type { Renderer } from "./types";
-import { setupGPU, loadTexture } from "./setup";
+import { setupGPU } from "./setup";
+import { buildAtlas } from "../assets";
 import {
   createGridPipeline,
   createQuadPipeline,
@@ -40,16 +41,18 @@ export async function initRenderer(
 
   // --- Compile pipelines (one-time) ---------------------------------------
   const grid = createGridPipeline(gpuCtx, gridLineData);
-  const houseTexture = await loadTexture(device, "/textures/buildings/house-placeholder.png");
+
+  // --- Load building atlas ------------------------------------------------
+  const atlas = await buildAtlas(device);
 
   // --- Build render layers ------------------------------------------------
   const layers = {
     path:            createFlatLayer(createPathPipeline(gpuCtx)),
     quad:            createFlatLayer(createQuadPipeline(gpuCtx)),
-    textured:        createTexturedLayer(createTexturedPipeline(gpuCtx, houseTexture)),
+    textured:        createTexturedLayer(createTexturedPipeline(gpuCtx, atlas.texture)),
     moveable:        createFlatLayer(createMoveablePipeline(gpuCtx)),
     preview:         createFlatLayer(createPreviewPipeline(gpuCtx)),
-    texturedPreview: createTexturedLayer(createTexturedPreviewPipeline(gpuCtx, houseTexture)),
+    texturedPreview: createTexturedLayer(createTexturedPreviewPipeline(gpuCtx, atlas.texture)),
     grid,
   };
 
@@ -66,6 +69,7 @@ export async function initRenderer(
       // Pass `state` itself so frame() reads the live showGrid value.
       // Safe because `state` is defined before frame() is ever called.
       { get showGrid() { return state.showGrid; } },
+      atlas.uvMap,
     ),
   };
 
