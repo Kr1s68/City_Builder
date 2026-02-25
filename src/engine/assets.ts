@@ -29,14 +29,19 @@ function spriteUrl(type: BuildingType): string {
   return `/textures/buildings/${type}.svg`;
 }
 
-/** Load a single image from a URL. */
-function loadImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
-    img.src = url;
-  });
+/** Load an SVG as an ImageBitmap at the target pixel size. */
+async function loadSvgBitmap(url: string, w: number, h: number): Promise<ImageBitmap> {
+  const res = await fetch(url);
+  const text = await res.text();
+
+  // Inject width/height so the browser knows the rasterisation size.
+  const sized = text.replace(
+    /^(<svg\s)/,
+    `$1width="${w}" height="${h}" `,
+  );
+
+  const blob = new Blob([sized], { type: "image/svg+xml" });
+  return createImageBitmap(blob);
 }
 
 /** Result returned by buildAtlas(). */
@@ -52,16 +57,16 @@ export interface AtlasResult {
  * uploads to a GPUTexture, and returns UV lookup data.
  */
 export async function buildAtlas(device: GPUDevice): Promise<AtlasResult> {
-  // Load all sprites in parallel.
-  const images = await Promise.all(ATLAS_ORDER.map(t => loadImage(spriteUrl(t))));
+  // Load all sprites as ImageBitmaps at atlas cell size.
+  const bitmaps = await Promise.all(
+    ATLAS_ORDER.map(t => loadSvgBitmap(spriteUrl(t), CELL, CELL)),
+  );
 
   // Composite onto an offscreen canvas.
   const atlasW = COLS * CELL;
   const atlasH = ROWS * CELL;
   const canvas = new OffscreenCanvas(atlasW, atlasH);
   const ctx = canvas.getContext("2d")!;
-
-  // Ensure transparent background.
   ctx.clearRect(0, 0, atlasW, atlasH);
 
   const uvMap = new Map<string, UVRegion>();
@@ -72,7 +77,8 @@ export async function buildAtlas(device: GPUDevice): Promise<AtlasResult> {
     const x = col * CELL;
     const y = row * CELL;
 
-    ctx.drawImage(images[i], x, y, CELL, CELL);
+    ctx.drawImage(bitmaps[i], x, y, CELL, CELL);
+    bitmaps[i].close();
 
     uvMap.set(ATLAS_ORDER[i], {
       u0: col / COLS,
