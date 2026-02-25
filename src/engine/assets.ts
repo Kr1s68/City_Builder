@@ -29,19 +29,24 @@ function spriteUrl(type: BuildingType): string {
   return `/textures/buildings/${type}.svg`;
 }
 
-/** Load an SVG as an ImageBitmap at the target pixel size. */
+/** Load an SVG as an ImageBitmap at the target pixel size.
+ *  Uses Image + data URI for maximum browser compatibility. */
 async function loadSvgBitmap(url: string, w: number, h: number): Promise<ImageBitmap> {
   const res = await fetch(url);
   const text = await res.text();
 
   // Inject width/height so the browser knows the rasterisation size.
-  const sized = text.replace(
-    /^(<svg\s)/,
-    `$1width="${w}" height="${h}" `,
-  );
+  const sized = text.replace(/<svg\s/, `<svg width="${w}" height="${h}" `);
 
-  const blob = new Blob([sized], { type: "image/svg+xml" });
-  return createImageBitmap(blob);
+  // Render SVG → Image via data URI, then extract an ImageBitmap.
+  const dataUri = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(sized);
+  const img = new Image(w, h);
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error(`Failed to decode SVG: ${url}`));
+    img.src = dataUri;
+  });
+  return createImageBitmap(img, { resizeWidth: w, resizeHeight: h });
 }
 
 /** Result returned by buildAtlas(). */
