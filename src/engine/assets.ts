@@ -49,29 +49,6 @@ async function loadSvgBitmap(url: string, w: number, h: number): Promise<ImageBi
   return createImageBitmap(img, { resizeWidth: w, resizeHeight: h });
 }
 
-/**
- * Loads an SVG from a URL and uploads it as a GPUTexture.
- * Uses the same Image + data URI approach as the atlas builder.
- */
-export async function loadSvgTexture(device: GPUDevice, url: string, w: number, h: number): Promise<GPUTexture> {
-  const bitmap = await loadSvgBitmap(url, w, h);
-  const texture = device.createTexture({
-    size: [w, h],
-    format: "rgba8unorm",
-    usage:
-      GPUTextureUsage.TEXTURE_BINDING |
-      GPUTextureUsage.COPY_DST |
-      GPUTextureUsage.RENDER_ATTACHMENT,
-  });
-  device.queue.copyExternalImageToTexture(
-    { source: bitmap },
-    { texture },
-    [w, h],
-  );
-  bitmap.close();
-  return texture;
-}
-
 /** Result returned by buildAtlas(). */
 export interface AtlasResult {
   /** The composited atlas uploaded to a GPUTexture. */

@@ -21,7 +21,6 @@ import {
 
 /** All the render layers created at init time, in draw order. */
 export interface FrameLayers {
-  background: TexturedLayer;
   path: FlatLayer;
   quad: FlatLayer;
   textured: TexturedLayer;
@@ -94,7 +93,6 @@ export function createFrameFn(
     });
 
     // Draw layers back-to-front.
-    drawTexturedLayer(layers.background, pass);              // Layer 0: world background
     drawFlatLayer(layers.path, pass, bindGroup);             // Layer 1: roads
     drawFlatLayer(layers.quad, pass, bindGroup);             // Layer 2: buildings (flat)
     drawTexturedLayer(layers.textured, pass);                // Layer 2b: buildings (textured)
