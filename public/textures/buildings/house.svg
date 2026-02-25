@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80" shape-rendering="crispEdges">
+  <!-- 3D Isometric medieval cottage -->
+
+  <!-- Chimney back -->
+  <rect x="44" y="6" width="6" height="14" fill="#707070"/>
+  <rect x="44" y="6" width="6" height="2" fill="#808080"/>
+  <rect x="44" y="4" width="7" height="2" fill="#606060"/>
+  <!-- Chimney smoke hint -->
+  <rect x="46" y="2" width="2" height="2" fill="#A0A0A0" opacity="0.4"/>
+
+  <!-- Roof - main thatched roof with 3D depth -->
+  <!-- Roof top face -->
+  <polygon points="32,10 6,26 32,34 58,26" fill="#C8A84C"/>
+  <!-- Roof left face (shadow) -->
+  <polygon points="6,26 6,30 32,38 32,34" fill="#8B7830"/>
+  <!-- Roof right face (lit) -->
+  <polygon points="58,26 58,30 32,38 32,34" fill="#A89040"/>
+  <!-- Roof ridge highlight -->
+  <rect x="30" y="10" width="4" height="1" fill="#D8B85C"/>
+  <!-- Thatch texture lines -->
+  <line x1="10" y1="27" x2="30" y2="35" stroke="#9A8838" stroke-width="1"/>
+  <line x1="14" y1="26" x2="31" y2="33" stroke="#9A8838" stroke-width="1"/>
+  <line x1="36" y1="35" x2="54" y2="27" stroke="#B89840" stroke-width="1"/>
+  <line x1="34" y1="33" x2="50" y2="26" stroke="#B89840" stroke-width="1"/>
+
+  <!-- Front wall (lighter - facing viewer) -->
+  <rect x="8" y="30" width="24" height="26" fill="#C8B898"/>
+  <!-- Front wall stone detail -->
+  <rect x="8" y="30" width="24" height="2" fill="#B0A080"/>
+  <rect x="8" y="42" width="24" height="1" fill="#B8A888"/>
+  <rect x="8" y="36" width="12" height="1" fill="#BCA890"/>
+  <rect x="22" y="38" width="10" height="1" fill="#BCA890"/>
+
+  <!-- Side wall (darker - depth) -->
+  <polygon points="32,30 56,26 56,52 32,56" fill="#A09070"/>
+  <!-- Side wall stone lines -->
+  <line x1="32" y1="36" x2="56" y2="32" stroke="#908060" stroke-width="1"/>
+  <line x1="32" y1="44" x2="56" y2="40" stroke="#908060" stroke-width="1"/>
+
+  <!-- Door (arched, front wall) -->
+  <rect x="12" y="40" width="8" height="16" fill="#5A3A20"/>
+  <rect x="13" y="39" width="6" height="1" fill="#5A3A20"/>
+  <rect x="14" y="38" width="4" height="1" fill="#5A3A20"/>
+  <!-- Door planks -->
+  <rect x="16" y="40" width="1" height="16" fill="#4A2A15"/>
+  <!-- Door handle -->
+  <rect x="18" y="47" width="1" height="2" fill="#D4A020"/>
+  <!-- Door frame -->
+  <rect x="11" y="38" width="1" height="18" fill="#6B4A30"/>
+  <rect x="20" y="38" width="1" height="18" fill="#6B4A30"/>
+
+  <!-- Window (front wall) -->
+  <rect x="23" y="36" width="6" height="6" fill="#88C8E8"/>
+  <rect x="23" y="36" width="6" height="1" fill="#6B4A30"/>
+  <rect x="23" y="41" width="6" height="1" fill="#6B4A30"/>
+  <rect x="23" y="36" width="1" height="6" fill="#6B4A30"/>
+  <rect x="28" y="36" width="1" height="6" fill="#6B4A30"/>
+  <rect x="26" y="36" width="1" height="6" fill="#6B4A30"/>
+  <!-- Window glow -->
+  <rect x="24" y="37" width="2" height="4" fill="#FFE8A0" opacity="0.5"/>
+
+  <!-- Window (side wall) -->
+  <rect x="38" y="32" width="5" height="5" fill="#88C8E8"/>
+  <rect x="38" y="32" width="5" height="1" fill="#6B4A30"/>
+  <rect x="38" y="36" width="5" height="1" fill="#6B4A30"/>
+  <rect x="38" y="32" width="1" height="5" fill="#6B4A30"/>
+  <rect x="42" y="32" width="1" height="5" fill="#6B4A30"/>
+
+  <!-- Foundation / base -->
+  <rect x="6" y="54" width="26" height="4" fill="#707070"/>
+  <polygon points="32,54 56,50 56,54 32,58" fill="#606060"/>
+  <rect x="6" y="54" width="26" height="1" fill="#808080"/>
+
+  <!-- Bush decorations -->
+  <rect x="2" y="52" width="5" height="4" fill="#4A7A2E"/>
+  <rect x="3" y="51" width="3" height="1" fill="#5A8A3E"/>
+  <rect x="56" y="48" width="4" height="4" fill="#4A7A2E"/>
+  <rect x="57" y="47" width="2" height="1" fill="#5A8A3E"/>
+</svg>

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80" shape-rendering="crispEdges">
+  <!-- 3D Isometric medieval farm - barn with crop fields -->
+
+  <!-- Barn roof (3D) -->
+  <polygon points="14,10 2,20 14,26 26,20" fill="#8B5E3C"/>
+  <polygon points="2,20 2,23 14,29 14,26" fill="#6B4226"/>
+  <polygon points="26,20 26,23 14,29 14,26" fill="#7A5230"/>
+
+  <!-- Barn front wall -->
+  <rect x="3" y="23" width="11" height="16" fill="#B08050"/>
+  <rect x="3" y="23" width="11" height="1" fill="#9A7040"/>
+  <!-- Barn planks -->
+  <rect x="3" y="27" width="11" height="1" fill="#9A7040"/>
+  <rect x="3" y="31" width="11" height="1" fill="#9A7040"/>
+  <!-- Barn door -->
+  <rect x="5" y="30" width="6" height="9" fill="#5A3A20"/>
+  <rect x="8" y="30" width="1" height="9" fill="#4A2A15"/>
+  <rect x="6" y="34" width="1" height="1" fill="#D4A020"/>
+  <!-- Barn window -->
+  <rect x="7" y="24" width="4" height="3" fill="#4A3020"/>
+  <rect x="8" y="24" width="2" height="1" fill="#FFE8A0" opacity="0.5"/>
+
+  <!-- Barn side wall -->
+  <polygon points="14,23 25,20 25,36 14,39" fill="#8B6530"/>
+  <line x1="14" y1="28" x2="25" y2="25" stroke="#7A5528" stroke-width="1"/>
+  <line x1="14" y1="33" x2="25" y2="30" stroke="#7A5528" stroke-width="1"/>
+
+  <!-- Barn foundation -->
+  <rect x="2" y="37" width="12" height="2" fill="#707070"/>
+  <polygon points="14,37 25,34 25,36 14,39" fill="#606060"/>
+
+  <!-- Fence posts (3D, surrounding fields) -->
+  <rect x="0" y="38" width="1" height="6" fill="#8B6A40"/>
+  <rect x="12" y="38" width="1" height="6" fill="#8B6A40"/>
+  <rect x="24" y="36" width="1" height="6" fill="#8B6A40"/>
+  <rect x="36" y="38" width="1" height="6" fill="#8B6A40"/>
+  <rect x="48" y="36" width="1" height="6" fill="#8B6A40"/>
+  <rect x="60" y="38" width="1" height="6" fill="#8B6A40"/>
+  <!-- Fence rails -->
+  <rect x="0" y="40" width="61" height="1" fill="#A08050"/>
+  <rect x="0" y="42" width="61" height="1" fill="#A08050"/>
+
+  <!-- Crop field (3D perspective) - wheat/grain rows -->
+  <polygon points="2,44 32,38 62,44 62,60 32,66 2,60" fill="#5A8A3E"/>
+
+  <!-- Crop rows (3D angled) -->
+  <polygon points="4,46 32,40 34,40 6,46" fill="#7AAA4E"/>
+  <polygon points="10,48 32,42 34,42 12,48" fill="#7AAA4E"/>
+  <polygon points="16,50 32,44 34,44 18,50" fill="#7AAA4E"/>
+  <polygon points="22,52 32,46 34,46 24,52" fill="#7AAA4E"/>
+  <polygon points="28,54 32,48 34,48 30,54" fill="#7AAA4E"/>
+
+  <!-- Right side crop rows -->
+  <polygon points="34,40 60,46 58,46 32,40" fill="#6A9A44"/>
+  <polygon points="34,42 58,48 56,48 32,42" fill="#6A9A44"/>
+  <polygon points="34,44 56,50 54,50 32,44" fill="#6A9A44"/>
+  <polygon points="34,46 54,52 52,52 32,46" fill="#6A9A44"/>
+
+  <!-- Wheat tufts (golden tops) -->
+  <rect x="8" y="44" width="2" height="2" fill="#D4B040"/>
+  <rect x="16" y="46" width="2" height="2" fill="#D4B040"/>
+  <rect x="24" y="48" width="2" height="2" fill="#D4B040"/>
+  <rect x="40" y="44" width="2" height="2" fill="#C4A030"/>
+  <rect x="48" y="46" width="2" height="2" fill="#C4A030"/>
+  <rect x="36" y="48" width="2" height="2" fill="#D4B040"/>
+  <rect x="44" y="50" width="2" height="2" fill="#C4A030"/>
+
+  <!-- Hay bale (3D) near barn -->
+  <rect x="26" y="32" width="6" height="4" fill="#D4B870"/>
+  <rect x="26" y="32" width="6" height="1" fill="#E4C880"/>
+  <rect x="27" y="33" width="4" height="2" fill="#C4A860"/>
+  <rect x="28" y="30" width="4" height="2" fill="#D4B870"/>
+  <rect x="28" y="30" width="4" height="1" fill="#E4C880"/>
+
+  <!-- Scarecrow -->
+  <rect x="42" y="38" width="1" height="8" fill="#6B4226"/>
+  <rect x="39" y="40" width="7" height="1" fill="#6B4226"/>
+  <rect x="41" y="37" width="3" height="2" fill="#D4B870"/>
+  <rect x="42" y="36" width="1" height="1" fill="#5A3A20"/>
+
+  <!-- Ground base -->
+  <rect x="0" y="58" width="64" height="4" fill="#5A7A30"/>
+</svg>

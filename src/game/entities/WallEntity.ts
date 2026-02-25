@@ -24,6 +24,8 @@ const DEFAULT_WALL_CONFIG: WallConfig = {
 };
 
 export class WallEntity extends PlaceableEntity {
+  /** Building type key for atlas UV lookup — routes this entity to the textured pipeline. */
+  readonly texture = "wall";
   /** Current hit points. Reaches 0 when the wall is destroyed. */
   health: number;
   /** Maximum hit points for this wall type. */

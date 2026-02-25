@@ -10,8 +10,9 @@
 
 export type { Renderer, OccupiedCell, TexturedEntity } from "./types";
 
-import type { Renderer } from "./types";
+import type { Renderer, TexturedEntity } from "./types";
 import { setupGPU, loadTexture } from "./setup";
+import { buildAtlas } from "../assets";
 import {
   createGridPipeline,
   createQuadPipeline,
@@ -21,8 +22,9 @@ import {
   createTexturedPipeline,
   createTexturedPreviewPipeline,
 } from "./pipelines/index";
-import { createFlatLayer, createTexturedLayer } from "./layers";
+import { createFlatLayer, createTexturedLayer, updateTexturedLayer } from "./layers";
 import { createFrameFn } from "./frame";
+import { GRID_COLS, GRID_ROWS } from "../../game/grid";
 
 /**
  * Initialises the WebGPU renderer and returns a Renderer handle.
@@ -40,16 +42,32 @@ export async function initRenderer(
 
   // --- Compile pipelines (one-time) ---------------------------------------
   const grid = createGridPipeline(gpuCtx, gridLineData);
-  const houseTexture = await loadTexture(device, "/textures/buildings/house-placeholder.png");
+
+  // --- Load building atlas & world texture in parallel --------------------
+  const [atlas, worldTexture] = await Promise.all([
+    buildAtlas(device),
+    loadTexture(device, "/textures/world.svg"),
+  ]);
 
   // --- Build render layers ------------------------------------------------
+  const backgroundLayer = createTexturedLayer(createTexturedPipeline(gpuCtx, worldTexture));
+
+  // Pre-fill the background layer with a single quad covering the whole grid.
+  const bgEntity: TexturedEntity = {
+    col: 0, row: 0,
+    width: GRID_COLS, height: GRID_ROWS,
+    type: "__background",
+  };
+  updateTexturedLayer(backgroundLayer, device, [bgEntity]);
+
   const layers = {
+    background:      backgroundLayer,
     path:            createFlatLayer(createPathPipeline(gpuCtx)),
     quad:            createFlatLayer(createQuadPipeline(gpuCtx)),
-    textured:        createTexturedLayer(createTexturedPipeline(gpuCtx, houseTexture)),
+    textured:        createTexturedLayer(createTexturedPipeline(gpuCtx, atlas.texture)),
     moveable:        createFlatLayer(createMoveablePipeline(gpuCtx)),
     preview:         createFlatLayer(createPreviewPipeline(gpuCtx)),
-    texturedPreview: createTexturedLayer(createTexturedPreviewPipeline(gpuCtx, houseTexture)),
+    texturedPreview: createTexturedLayer(createTexturedPreviewPipeline(gpuCtx, atlas.texture)),
     grid,
   };
 
@@ -66,6 +84,7 @@ export async function initRenderer(
       // Pass `state` itself so frame() reads the live showGrid value.
       // Safe because `state` is defined before frame() is ever called.
       { get showGrid() { return state.showGrid; } },
+      atlas.uvMap,
     ),
   };
 

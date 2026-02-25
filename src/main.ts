@@ -192,7 +192,7 @@ async function main() {
 
       // Build preview when in placing mode
       let previewCells: { col: number; row: number }[] | undefined;
-      let previewTextured: { col: number; row: number; width: number; height: number }[] | undefined;
+      let previewTextured: { col: number; row: number; width: number; height: number; type: string }[] | undefined;
       if (placingMode !== "none") {
         const { wx, wy } = screenToWorld(
           camera,
@@ -204,9 +204,7 @@ async function main() {
         const col = Math.floor(wx / CELL_SIZE);
         const row = Math.floor(wy / CELL_SIZE);
 
-        if (placingMode === "house") {
-          previewTextured = [{ col, row, width: 2, height: 2 }];
-        } else if (placingMode === "placeholder") {
+        if (placingMode === "placeholder") {
           previewCells = [];
           for (let dc = 0; dc < 2; dc++) {
             for (let dr = 0; dr < 2; dr++) {
@@ -214,14 +212,9 @@ async function main() {
             }
           }
         } else {
-          // Generic building preview using definition size
+          // All building types now use textured preview via the atlas
           const def = getBuildingDef(placingMode as BuildingType);
-          previewCells = [];
-          for (let dc = 0; dc < def.width; dc++) {
-            for (let dr = 0; dr < def.height; dr++) {
-              previewCells.push({ col: col + dc, row: row + dr });
-            }
-          }
+          previewTextured = [{ col, row, width: def.width, height: def.height, type: placingMode as string }];
         }
       }
 

@@ -3,8 +3,8 @@
 import { PlaceableEntity } from "./PlaceableEntity";
 
 export class HouseEntity extends PlaceableEntity {
-  /** Path to the building's texture (relative to public/). */
-  readonly texture = "public/textures/buildings/house-placeholder.png";
+  /** Building type key for atlas UV lookup. */
+  readonly texture = "house";
   /** Time in seconds required to construct this building. */
   readonly buildTime: number;
 

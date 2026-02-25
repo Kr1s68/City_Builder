@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80" shape-rendering="crispEdges">
+  <!-- 3D Isometric medieval quarry - open stone pit with crane -->
+
+  <!-- Crane structure -->
+  <rect x="46" y="4" width="3" height="36" fill="#6B4226"/>
+  <rect x="36" y="4" width="13" height="3" fill="#7A5A30"/>
+  <rect x="36" y="4" width="2" height="2" fill="#8B6A40"/>
+  <!-- Crane diagonal support -->
+  <polygon points="46,14 49,14 49,4" fill="#5A3A20"/>
+  <!-- Rope -->
+  <rect x="38" y="7" width="1" height="16" fill="#A09070"/>
+  <rect x="39" y="7" width="1" height="14" fill="#B0A080"/>
+  <!-- Hanging stone block -->
+  <rect x="36" y="23" width="5" height="4" fill="#A0A0A0"/>
+  <rect x="36" y="23" width="5" height="1" fill="#B8B8B8"/>
+  <rect x="37" y="24" width="3" height="2" fill="#909090"/>
+
+  <!-- Back rock wall (3D) -->
+  <polygon points="4,18 32,12 60,18 60,26 32,32 4,26" fill="#808080"/>
+  <polygon points="4,18 4,26 32,32 32,24" fill="#606060"/>
+  <polygon points="60,18 60,26 32,32 32,24" fill="#707070"/>
+  <!-- Rock texture -->
+  <rect x="10" y="20" width="6" height="3" fill="#707070"/>
+  <rect x="20" y="18" width="5" height="3" fill="#6A6A6A"/>
+  <rect x="40" y="19" width="6" height="3" fill="#757575"/>
+
+  <!-- Left pit wall (3D face) -->
+  <rect x="4" y="26" width="6" height="22" fill="#707070"/>
+  <rect x="4" y="26" width="6" height="2" fill="#808080"/>
+  <rect x="4" y="32" width="6" height="1" fill="#606060"/>
+  <rect x="4" y="38" width="6" height="1" fill="#606060"/>
+  <rect x="5" y="30" width="4" height="2" fill="#5A5A5A"/>
+  <rect x="5" y="36" width="3" height="2" fill="#656565"/>
+
+  <!-- Right pit wall -->
+  <rect x="54" y="26" width="6" height="22" fill="#606060"/>
+  <rect x="54" y="26" width="6" height="2" fill="#707070"/>
+  <rect x="54" y="34" width="6" height="1" fill="#505050"/>
+  <rect x="55" y="30" width="4" height="2" fill="#585858"/>
+
+  <!-- Quarry floor (3D perspective) -->
+  <polygon points="10,40 32,36 54,40 54,48 32,52 10,48" fill="#909090"/>
+  <polygon points="10,40 10,48 32,52 32,44" fill="#808080"/>
+  <!-- Floor stone blocks -->
+  <rect x="16" y="42" width="4" height="3" fill="#A0A0A0"/>
+  <rect x="22" y="40" width="5" height="3" fill="#989898"/>
+  <rect x="34" y="41" width="4" height="3" fill="#A0A0A0"/>
+
+  <!-- Stone block pile (foreground, 3D) -->
+  <rect x="12" y="48" width="8" height="4" fill="#B0B0B0"/>
+  <rect x="12" y="48" width="8" height="1" fill="#C0C0C0"/>
+  <rect x="14" y="46" width="5" height="2" fill="#A8A8A8"/>
+  <rect x="14" y="46" width="5" height="1" fill="#B8B8B8"/>
+  <!-- Block joints -->
+  <rect x="16" y="48" width="1" height="4" fill="#909090"/>
+  <rect x="12" y="50" width="8" height="1" fill="#989898"/>
+
+  <!-- Second stone pile -->
+  <rect x="38" y="46" width="6" height="4" fill="#A8A8A8"/>
+  <rect x="38" y="46" width="6" height="1" fill="#B8B8B8"/>
+  <rect x="41" y="46" width="1" height="4" fill="#909090"/>
+
+  <!-- Pickaxes and tools -->
+  <rect x="28" y="44" width="1" height="6" fill="#6B4226"/>
+  <rect x="27" y="44" width="3" height="1" fill="#A0A0A0"/>
+  <rect x="32" y="45" width="1" height="5" fill="#6B4226"/>
+  <rect x="31" y="45" width="3" height="1" fill="#A0A0A0"/>
+
+  <!-- Wooden scaffold/supports -->
+  <rect x="10" y="26" width="2" height="14" fill="#7A5A30"/>
+  <rect x="10" y="26" width="8" height="2" fill="#8B6A40"/>
+
+  <!-- Ground/foundation -->
+  <rect x="2" y="48" width="60" height="4" fill="#686868"/>
+  <rect x="2" y="48" width="60" height="1" fill="#787878"/>
+
+  <!-- Cart with stones -->
+  <rect x="2" y="50" width="8" height="4" fill="#7A5A30"/>
+  <rect x="3" y="48" width="6" height="2" fill="#A0A0A0"/>
+  <rect x="1" y="54" width="3" height="2" fill="#5A3A20"/>
+  <rect x="7" y="54" width="3" height="2" fill="#5A3A20"/>
+</svg>

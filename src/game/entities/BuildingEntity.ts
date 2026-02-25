@@ -11,6 +11,8 @@ import type { BuildingType } from "../buildings";
 export class BuildingEntity extends PlaceableEntity {
   /** References the BuildingDef catalogue entry. */
   readonly buildingType: BuildingType;
+  /** Building type key for atlas UV lookup — routes this entity to the textured pipeline. */
+  readonly texture: string;
   /** Current health. */
   health: number;
   /** Max health from definition. */
@@ -19,6 +21,7 @@ export class BuildingEntity extends PlaceableEntity {
   constructor(col: number, row: number, buildingType: BuildingType, width: number, height: number, maxHealth: number) {
     super(col, row, width, height);
     this.buildingType = buildingType;
+    this.texture = buildingType;
     this.maxHealth = maxHealth;
     this.health = maxHealth;
   }

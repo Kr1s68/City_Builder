@@ -90,7 +90,7 @@ export const BUILDING_DEFS: Record<BuildingType, BuildingDef> = {
     storageBonus: { gold: 200 },
     buildTime: 15,
     maxHealth: 500,
-    textured: false,
+    textured: true,
   },
 
   lumber_mill: {
@@ -104,7 +104,7 @@ export const BUILDING_DEFS: Record<BuildingType, BuildingDef> = {
     storageBonus: {},
     buildTime: 8,
     maxHealth: 120,
-    textured: false,
+    textured: true,
   },
 
   quarry: {
@@ -118,7 +118,7 @@ export const BUILDING_DEFS: Record<BuildingType, BuildingDef> = {
     storageBonus: {},
     buildTime: 10,
     maxHealth: 200,
-    textured: false,
+    textured: true,
   },
 
   farm: {
@@ -132,7 +132,7 @@ export const BUILDING_DEFS: Record<BuildingType, BuildingDef> = {
     storageBonus: { food: 50 },
     buildTime: 6,
     maxHealth: 80,
-    textured: false,
+    textured: true,
   },
 
   storage: {
@@ -146,7 +146,7 @@ export const BUILDING_DEFS: Record<BuildingType, BuildingDef> = {
     storageBonus: { gold: 200, wood: 150, stone: 150, food: 150 },
     buildTime: 8,
     maxHealth: 180,
-    textured: false,
+    textured: true,
   },
 
   market: {
@@ -160,7 +160,7 @@ export const BUILDING_DEFS: Record<BuildingType, BuildingDef> = {
     storageBonus: { gold: 100 },
     buildTime: 10,
     maxHealth: 140,
-    textured: false,
+    textured: true,
   },
 
   wall: {
@@ -174,7 +174,7 @@ export const BUILDING_DEFS: Record<BuildingType, BuildingDef> = {
     storageBonus: {},
     buildTime: 2,
     maxHealth: 100,
-    textured: false,
+    textured: true,
   },
 };
 

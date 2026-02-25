@@ -19,6 +19,7 @@ This is a 2D city-builder game with a **hand-rolled WebGPU renderer** (no game e
 ```
 src/main.ts              — Orchestrator: wires engine + game + input together
   ├── engine/            — Rendering and camera (no game logic)
+  │     ├── assets.ts    — Texture atlas builder (loads SVGs → GPU atlas + UV map)
   │     ├── camera.ts    — Orthographic camera: pan, zoom, VP matrix, screen↔world
   │     └── renderer/    — WebGPU abstraction
   │           ├── index.ts      — initRenderer() orchestrator (wires setup, pipelines, layers)
@@ -45,12 +46,13 @@ src/main.ts              — Orchestrator: wires engine + game + input together
 
 ### Rendering Pipeline
 
-Layers drawn back-to-front each frame: path cells → placed buildings → textured buildings → moveable entities → placement preview → textured preview → grid lines. A single 64-byte uniform buffer (4x4 VP matrix) is shared across all shaders.
+Layers drawn back-to-front each frame: world background → path cells → placed buildings → textured buildings → moveable entities → placement preview → textured preview → grid lines. A single 64-byte uniform buffer (4x4 VP matrix) is shared across all shaders.
 
 ### Key Patterns
 
 - **Render layers**: Each visual layer (path, building, preview, etc.) is wrapped in a `FlatLayer` or `TexturedLayer` struct that encapsulates the pipeline, CPU staging buffer, and draw logic. Layers are updated then drawn in back-to-front order via `updateFlatLayer()`/`drawFlatLayer()` (or textured equivalents).
-- **Entity discrimination**: `if ("texture" in entity)` routes to textured vs flat-color pipeline. `PlaceableEntity` is the base class; `HouseEntity` adds a `texture` property; `MoveableEntity` is separate (NPCs, not buildings).
+- **Texture atlas**: All building sprites are SVGs in `public/textures/buildings/`. At init, `engine/assets.ts` composites them into a single atlas GPUTexture (4×2 grid, 128px cells). Per-entity UV regions are resolved via a `Map<string, UVRegion>` keyed by `BuildingType`.
+- **Entity discrimination**: `if ("texture" in entity)` routes to textured vs flat-color pipeline. All building entities (`HouseEntity`, `BuildingEntity`, `WallEntity`) have a `texture` property matching their `BuildingType` key. `MoveableEntity` is separate (NPCs, not buildings).
 - **Cell key format**: `"col,row"` string used consistently across `grid.ts`, `pathfinder.ts`, and `pathNetwork.ts`.
 - **Pre-allocated GPU buffers**: All vertex buffers and CPU-side Float32Arrays are allocated at max size (`MAX_QUADS = 4096`) at startup — only the used portion is uploaded each frame.
 - **Textured quads**: UVs are vertically flipped (`v:1` at top, `v:0` at bottom). Textured buildings extend beyond footprint with padding for a height illusion.
@@ -58,4 +60,4 @@ Layers drawn back-to-front each frame: path cells → placed buildings → textu
 
 ### Stub Files
 
-Many modules (`engine/assets.ts`, `engine/audio.ts`, `game/buildings.ts`, `game/resources.ts`, `game/simulation.ts`, `game/save.ts`, `ui/*`) are empty stubs (`export {}`) reserved for future implementation.
+Many modules (`engine/audio.ts`, `game/save.ts`, `ui/*`) are empty stubs (`export {}`) reserved for future implementation.

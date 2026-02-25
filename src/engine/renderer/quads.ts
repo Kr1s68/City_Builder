@@ -2,6 +2,7 @@
 
 import { CELL_SIZE } from "../../game/grid";
 import type { OccupiedCell, TexturedEntity } from "./types";
+import type { UVRegion } from "../assets";
 
 /** Maximum cells we can render in a single draw call. Raising this increases VRAM usage. */
 export const MAX_QUADS = 4096;
@@ -108,9 +109,10 @@ export const FLOATS_PER_TEXTURED_QUAD = 24;
  * width × height in grid cells.
  *
  * @param device   WebGPU device — needed to schedule the buffer upload.
- * @param entities Array of entities with col, row, width, height.
+ * @param entities Array of entities with col, row, width, height, type.
  * @param cpuBuf   Pre-allocated Float32Array for MAX_QUADS * FLOATS_PER_TEXTURED_QUAD floats.
  * @param gpuBuf   The GPU vertex buffer that this draw call will read from.
+ * @param uvMap    Per-building-type UV regions within the atlas texture.
  * @returns The number of quads written (pass this to `draw(count * 6)`).
  */
 export function buildTexturedQuads(
@@ -118,6 +120,7 @@ export function buildTexturedQuads(
   entities: TexturedEntity[],
   cpuBuf: Float32Array,
   gpuBuf: GPUBuffer,
+  uvMap?: ReadonlyMap<string, UVRegion>,
 ): number {
   const count = Math.min(entities.length, MAX_QUADS);
 
@@ -126,6 +129,9 @@ export function buildTexturedQuads(
   // (+y direction) to create a 3D height effect. Base stays anchored.
   const PAD_X = 0.25 * CELL_SIZE;   // extend left & right
   const PAD_UP = 1.0 * CELL_SIZE;   // extend upward (above footprint)
+
+  // Default full-texture UV region (used when no atlas).
+  const FULL_UV: UVRegion = { u0: 0, v0: 0, u1: 1, v1: 1 };
 
   for (let i = 0; i < count; i++) {
     const e = entities[i];
@@ -137,16 +143,20 @@ export function buildTexturedQuads(
 
     const off = i * FLOATS_PER_TEXTURED_QUAD;
 
-    // UVs are flipped vertically: top of quad = v:1, bottom = v:0
+    // Look up UV region for this entity's type, or fall back to full texture.
+    const uv = (uvMap && uvMap.get(e.type)) ?? FULL_UV;
+
+    // UVs are flipped vertically: top of quad = v1 (bottom of sprite),
+    // bottom = v0 (top of sprite).
     // Triangle 1: top-left half
-    cpuBuf[off +  0] = x0; cpuBuf[off +  1] = y0; cpuBuf[off +  2] = 0; cpuBuf[off +  3] = 1;
-    cpuBuf[off +  4] = x1; cpuBuf[off +  5] = y0; cpuBuf[off +  6] = 1; cpuBuf[off +  7] = 1;
-    cpuBuf[off +  8] = x0; cpuBuf[off +  9] = y1; cpuBuf[off + 10] = 0; cpuBuf[off + 11] = 0;
+    cpuBuf[off +  0] = x0; cpuBuf[off +  1] = y0; cpuBuf[off +  2] = uv.u0; cpuBuf[off +  3] = uv.v1;
+    cpuBuf[off +  4] = x1; cpuBuf[off +  5] = y0; cpuBuf[off +  6] = uv.u1; cpuBuf[off +  7] = uv.v1;
+    cpuBuf[off +  8] = x0; cpuBuf[off +  9] = y1; cpuBuf[off + 10] = uv.u0; cpuBuf[off + 11] = uv.v0;
 
     // Triangle 2: bottom-right half
-    cpuBuf[off + 12] = x1; cpuBuf[off + 13] = y0; cpuBuf[off + 14] = 1; cpuBuf[off + 15] = 1;
-    cpuBuf[off + 16] = x1; cpuBuf[off + 17] = y1; cpuBuf[off + 18] = 1; cpuBuf[off + 19] = 0;
-    cpuBuf[off + 20] = x0; cpuBuf[off + 21] = y1; cpuBuf[off + 22] = 0; cpuBuf[off + 23] = 0;
+    cpuBuf[off + 12] = x1; cpuBuf[off + 13] = y0; cpuBuf[off + 14] = uv.u1; cpuBuf[off + 15] = uv.v1;
+    cpuBuf[off + 16] = x1; cpuBuf[off + 17] = y1; cpuBuf[off + 18] = uv.u1; cpuBuf[off + 19] = uv.v0;
+    cpuBuf[off + 20] = x0; cpuBuf[off + 21] = y1; cpuBuf[off + 22] = uv.u0; cpuBuf[off + 23] = uv.v0;
   }
 
   if (count > 0) {
