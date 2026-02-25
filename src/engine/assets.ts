@@ -8,8 +8,10 @@ import type { BuildingType } from "../game/buildings";
 
 /** UV region within the atlas for a single building type. */
 export interface UVRegion {
-  u0: number; v0: number;
-  u1: number; v1: number;
+  u0: number;
+  v0: number;
+  u1: number;
+  v1: number;
 }
 
 /** Atlas cell size in pixels. Each building sprite is rasterised into this. */
@@ -20,20 +22,26 @@ const ROWS = 2;
 
 /** Ordered list of building types — determines atlas layout position. */
 const ATLAS_ORDER: BuildingType[] = [
-  "house", "town_hall", "lumber_mill", "quarry",
-  "farm",  "storage",   "market",      "wall",
+  "house",
+  "town_hall",
+  "lumber_mill",
+  "quarry",
+  "farm",
+  "storage",
+  "market",
+  "wall",
 ];
 
 /** Maps a building type to its PNG sprite filename. */
 const SPRITE_FILES: Record<BuildingType, string> = {
-  house:       "house-pre.png",
-  town_hall:   "town-hall-pre.png",
-  lumber_mill: "lumber-mill-pre.png",
-  quarry:      "quarry-pre.png",
-  farm:        "farm-pre.png",
-  storage:     "storage-pre.png",
-  market:      "market-pre.png",
-  wall:        "blacksmith-pre.png", // placeholder until a wall sprite is made
+  house: "house.png",
+  town_hall: "town-hall.png",
+  lumber_mill: "lumber-mill.png",
+  quarry: "quarry.png",
+  farm: "farm.png",
+  storage: "storage.png",
+  market: "market.png",
+  wall: "blacksmith-pre.png", // placeholder until a wall sprite is made
 };
 
 /** Maps a building type to a sprite URL. */
@@ -42,7 +50,11 @@ function spriteUrl(type: BuildingType): string {
 }
 
 /** Load a PNG as an ImageBitmap at the target pixel size. */
-async function loadBitmap(url: string, w: number, h: number): Promise<ImageBitmap> {
+async function loadBitmap(
+  url: string,
+  w: number,
+  h: number,
+): Promise<ImageBitmap> {
   const res = await fetch(url);
   const blob = await res.blob();
   return createImageBitmap(blob, { resizeWidth: w, resizeHeight: h });
@@ -63,7 +75,7 @@ export interface AtlasResult {
 export async function buildAtlas(device: GPUDevice): Promise<AtlasResult> {
   // Load all sprites as ImageBitmaps at atlas cell size.
   const bitmaps = await Promise.all(
-    ATLAS_ORDER.map(t => loadBitmap(spriteUrl(t), CELL, CELL)),
+    ATLAS_ORDER.map((t) => loadBitmap(spriteUrl(t), CELL, CELL)),
   );
 
   // Composite onto an offscreen canvas.
@@ -103,11 +115,10 @@ export async function buildAtlas(device: GPUDevice): Promise<AtlasResult> {
       GPUTextureUsage.RENDER_ATTACHMENT,
   });
 
-  device.queue.copyExternalImageToTexture(
-    { source: bitmap },
-    { texture },
-    [atlasW, atlasH],
-  );
+  device.queue.copyExternalImageToTexture({ source: bitmap }, { texture }, [
+    atlasW,
+    atlasH,
+  ]);
   bitmap.close();
 
   return { texture, uvMap };

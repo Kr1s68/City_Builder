@@ -9,7 +9,7 @@ export class HouseEntity extends PlaceableEntity {
   readonly buildTime: number;
 
   constructor(col: number, row: number, buildTime = 0) {
-    super(col, row, 2, 2);
+    super(col, row, 3, 3);
     this.buildTime = buildTime;
   }
 }
