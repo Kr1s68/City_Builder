@@ -1,4 +1,4 @@
-/** Asset loader — builds a texture atlas from individual building SVGs.
+/** Asset loader — builds a texture atlas from individual building PNGs.
  *
  *  Loads each building sprite, composites them into a single atlas texture,
  *  and returns per-building-type UV regions for the textured quad builder.
@@ -24,29 +24,28 @@ const ATLAS_ORDER: BuildingType[] = [
   "farm",  "storage",   "market",      "wall",
 ];
 
+/** Maps a building type to its PNG sprite filename. */
+const SPRITE_FILES: Record<BuildingType, string> = {
+  house:       "house-pre.png",
+  town_hall:   "town-hall-pre.png",
+  lumber_mill: "lumber-mill-pre.png",
+  quarry:      "quarry-pre.png",
+  farm:        "farm-pre.png",
+  storage:     "storage-pre.png",
+  market:      "market-pre.png",
+  wall:        "blacksmith-pre.png", // placeholder until a wall sprite is made
+};
+
 /** Maps a building type to a sprite URL. */
 function spriteUrl(type: BuildingType): string {
-  return `/textures/buildings/${type}.svg`;
+  return `/textures/buildings/${SPRITE_FILES[type]}`;
 }
 
-/** Load an SVG as an ImageBitmap at the target pixel size.
- *  Uses Image + data URI for maximum browser compatibility. */
-async function loadSvgBitmap(url: string, w: number, h: number): Promise<ImageBitmap> {
+/** Load a PNG as an ImageBitmap at the target pixel size. */
+async function loadBitmap(url: string, w: number, h: number): Promise<ImageBitmap> {
   const res = await fetch(url);
-  const text = await res.text();
-
-  // Inject width/height so the browser knows the rasterisation size.
-  const sized = text.replace(/<svg\s/, `<svg width="${w}" height="${h}" `);
-
-  // Render SVG → Image via data URI, then extract an ImageBitmap.
-  const dataUri = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(sized);
-  const img = new Image(w, h);
-  await new Promise<void>((resolve, reject) => {
-    img.onload = () => resolve();
-    img.onerror = () => reject(new Error(`Failed to decode SVG: ${url}`));
-    img.src = dataUri;
-  });
-  return createImageBitmap(img, { resizeWidth: w, resizeHeight: h });
+  const blob = await res.blob();
+  return createImageBitmap(blob, { resizeWidth: w, resizeHeight: h });
 }
 
 /** Result returned by buildAtlas(). */
@@ -58,13 +57,13 @@ export interface AtlasResult {
 }
 
 /**
- * Loads all building SVG sprites, composites them into a single atlas,
+ * Loads all building PNG sprites, composites them into a single atlas,
  * uploads to a GPUTexture, and returns UV lookup data.
  */
 export async function buildAtlas(device: GPUDevice): Promise<AtlasResult> {
   // Load all sprites as ImageBitmaps at atlas cell size.
   const bitmaps = await Promise.all(
-    ATLAS_ORDER.map(t => loadSvgBitmap(spriteUrl(t), CELL, CELL)),
+    ATLAS_ORDER.map(t => loadBitmap(spriteUrl(t), CELL, CELL)),
   );
 
   // Composite onto an offscreen canvas.
