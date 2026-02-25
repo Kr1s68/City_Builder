@@ -11,8 +11,8 @@
 export type { Renderer, OccupiedCell, TexturedEntity } from "./types";
 
 import type { Renderer, TexturedEntity } from "./types";
-import { setupGPU, loadTexture } from "./setup";
-import { buildAtlas } from "../assets";
+import { setupGPU } from "./setup";
+import { buildAtlas, loadSvgTexture } from "../assets";
 import {
   createGridPipeline,
   createQuadPipeline,
@@ -46,7 +46,7 @@ export async function initRenderer(
   // --- Load building atlas & world texture in parallel --------------------
   const [atlas, worldTexture] = await Promise.all([
     buildAtlas(device),
-    loadTexture(device, "/textures/world.svg"),
+    loadSvgTexture(device, "/textures/world.svg", 128, 128),
   ]);
 
   // --- Build render layers ------------------------------------------------
